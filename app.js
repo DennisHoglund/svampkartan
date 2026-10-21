@@ -99,12 +99,33 @@
   // ---------- Sessionsstyrning ----------
   function render(session) {
     if (session && session.user) {
+      currentUserId = session.user.id;
       $('user-email').textContent = session.user.email || '';
       show('app');
+      checkDb();
     } else {
       show('login');
     }
   }
+
+  async function checkDb() {
+    const el = $('db-status');
+    const fynd = await sb.from('svamp_fynd').select('id', { count: 'exact', head: true });
+    const foton = await sb.storage.from('svamp-foton').list(sb_uid(), { limit: 1 });
+    if (fynd.error) {
+      el.textContent = 'Tabellen svamp_fynd saknas – kör supabase/schema.sql.';
+      el.className = 'msg error';
+    } else if (foton.error) {
+      el.textContent = 'Fotobucketen svamp-foton saknas – kör supabase/schema.sql.';
+      el.className = 'msg error';
+    } else {
+      el.textContent = 'Databasen är klar · ' + (fynd.count || 0) + ' fynd sparade';
+      el.className = 'msg ok';
+    }
+  }
+
+  let currentUserId = null;
+  function sb_uid() { return currentUserId || ''; }
 
   sb.auth.onAuthStateChange((_event, session) => render(session));
   sb.auth.getSession().then(({ data }) => render(data.session));

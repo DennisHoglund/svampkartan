@@ -18,6 +18,10 @@ Allt eget har prefix så att Jaktvinds tabeller (`logg`, `platser`) aldrig berö
 - tabeller: `svamp_*`
 - bucket: `svamp-foton`
 
+### 2b. Databas och foton
+Supabase → SQL Editor → New query → klistra in `supabase/schema.sql` → Run.
+Skapar tabellen `svamp_fynd`, bucketen `svamp-foton` och reglerna – rör inget av Jaktvinds.
+
 ### 3. Första inloggningen
 Öppna `https://dennishoglund.github.io/svampkartan/` i Safari och logga in med samma e-post och lösenord som i Jaktvind.
 
@@ -40,6 +44,5 @@ Safari → Dela → **Lägg till på hemskärmen**.
 - iPhone sparar lösenordet i nyckelringen och fyller i med Face ID.
 
 ## Nästa steg
-2. Tabell `fynd`, RLS och privat bucket för foton
 3. Karta med lager och din position
 4. Lägg till fynd
