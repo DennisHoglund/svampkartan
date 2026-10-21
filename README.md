@@ -10,25 +10,28 @@ Privat PWA för att spara svampställen på kartan. Steg 1: appskal, Kantarell-t
 3. Settings → Pages → Deploy from branch → `main` / `(root)`.
 4. Appen hamnar på `https://dennishoglund.github.io/svampkartan/`.
 
-### 2. Supabase
-1. Skapa ett nytt projekt `svampkartan` (region: Stockholm/eu-north-1 om möjligt).
-2. **Authentication → Sign In / Providers → Email**: ska vara på.
-3. **Authentication → Emails → Templates → Magic Link**: byt innehåll så att koden syns:
+### 2. Supabase (delar projekt med Jaktvind)
+Svampkartan använder Jaktvinds Supabase-projekt eftersom gratisnivån bara tillåter två projekt.
+Allt eget har prefix så att Jaktvinds tabeller (`logg`, `platser`) aldrig berörs:
+- tabeller: `svamp_*`
+- bucket: `svamp-foton`
 
-   Ämne: `Din kod till Svampkartan`
+Enda inställningen som ändras:
+**Authentication → Emails → Templates → Magic Link** – visa koden. Jaktvind loggar in med lösenord och använder inte den här mallen.
 
-   ```html
-   <h2>Svampkartan</h2>
-   <p>Din inloggningskod:</p>
-   <p style="font-size:28px;letter-spacing:4px"><strong>{{ .Token }}</strong></p>
-   <p>Koden gäller i en timme.</p>
-   ```
-4. **Authentication → URL Configuration → Site URL**: `https://dennishoglund.github.io/svampkartan/`
-5. **Project Settings → API**: kopiera Project URL och publishable/anon key till `config.js`.
+Ämne: `Din kod till Svampkartan`
+
+```html
+<h2>Svampkartan</h2>
+<p>Din inloggningskod:</p>
+<p style="font-size:28px;letter-spacing:4px"><strong>{{ .Token }}</strong></p>
+<p>Koden gäller i en timme.</p>
+```
+
+Site URL och registreringsinställningar lämnas orörda. Logga in med samma e-post som i Jaktvind – det är samma konto.
 
 ### 3. Första inloggningen
-1. Öppna appen i Safari, logga in med din e-post och koden.
-2. **Viktigt:** gå sedan till Authentication → Sign In / Providers och stäng av **Allow new users to sign up**. Då kan ingen annan skapa konto.
+Öppna `https://dennishoglund.github.io/svampkartan/` i Safari och logga in med e-post och kod.
 
 ### 4. Installera på iPhone
 Safari → Dela → **Lägg till på hemskärmen**.
