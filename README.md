@@ -37,6 +37,7 @@ Safari → Dela → **Lägg till på hemskärmen**.
 | `config.js` | Supabase-URL och nyckel |
 | `map.js` | Karta, lager, min position, fyndmarkörer |
 | `arter.js` | Arter med namn och färg |
+| `vader.js` | Regn och temperatur 10 dygn före fyndet (Open-Meteo) |
 | `fynd.js` | Nytt fynd, foto, spara, ta bort |
 | `sw.js` | Offline: appfiler nätet först, kartrutor cachas (max 1500) |
 | `manifest.webmanifest` | PWA-inställningar |
@@ -47,6 +48,5 @@ Safari → Dela → **Lägg till på hemskärmen**.
 - iPhone sparar lösenordet i nyckelringen och fyller i med Face ID.
 
 ## Nästa steg
-5. Väder vid fyndet (regn senaste 10 dagarna)
 6. Offline-kö för fynd utan täckning
 7. Filter och säsongsvy

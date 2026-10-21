@@ -119,7 +119,7 @@
 
   async function loadFynd(quiet) {
     const { data, error } = await sb.from('svamp_fynd')
-      .select('id, art, mangd, anteckning, lat, lon, funnen_at, foto_path')
+      .select('id, art, mangd, anteckning, lat, lon, funnen_at, foto_path, vader')
       .order('funnen_at', { ascending: false });
     if (error) {
       const saknas = (error.code === '42P01') || /does not exist|not find/i.test(error.message || '');
@@ -127,6 +127,7 @@
       return;
     }
     window.SvampMap.showFynd(data || []);
+    window.SvampFynd.backfill(data);
     if (!quiet) window.SvampMap.toast(data && data.length ? data.length + ' fynd på kartan' : 'Databasen är klar · inga fynd än', 'ok', 2500);
   }
 

@@ -156,6 +156,7 @@ window.SvampMap = (function () {
                    (f.foto_path ? '<div class="pop-foto"><span class="pop-meta">Laddar foto…</span></div>' : '') +
                    '<strong>' + esc(art.namn) + '</strong><br>' +
                    '<span class="pop-meta">' + esc(datum) + ' · mängd ' + esc(f.mangd) + '</span>' +
+                   (f.vader ? '<br><span class="pop-meta">' + esc(window.SvampVader.text(f.vader)) + '</span>' : '') +
                    (f.anteckning ? '<p class="pop-not">' + esc(f.anteckning) + '</p>' : '') +
                    '<button type="button" class="pop-delete">Ta bort</button></div>';
       L.marker([f.lat, f.lon], { icon: pinIcon(art.farg) }).bindPopup(html, { maxWidth: 260, minWidth: 200 }).addTo(fyndLayer);

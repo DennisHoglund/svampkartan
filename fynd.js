@@ -196,6 +196,10 @@ window.SvampFynd = (function () {
         foto_path,
         funnen_at: tid.toISOString()
       };
+      setMsg('Hämtar väder…');
+      row.vader = await window.SvampVader.hamta(row.lat, row.lon, tid);
+
+      setMsg('Sparar…');
       const { error } = await sb.from('svamp_fynd').insert(row);
       if (error) {
         if (foto_path) await sb.storage.from(BUCKET).remove([foto_path]);
@@ -257,5 +261,23 @@ window.SvampFynd = (function () {
     if (onSaved) onSaved();
   }
 
-  return { setup, setUser, open };
+  // Fyll i väder i efterhand för fynd som saknar det (t.ex. sparade utan täckning)
+  let backfilling = false;
+  async function backfill(list) {
+    if (backfilling) return;
+    const saknar = (list || []).filter((f) => !f.vader).slice(0, 20);
+    if (!saknar.length) return;
+    backfilling = true;
+    let andrade = 0;
+    for (const f of saknar) {
+      const v = await window.SvampVader.hamta(f.lat, f.lon, new Date(f.funnen_at));
+      if (!v) continue;
+      const { error } = await sb.from('svamp_fynd').update({ vader: v, updated_at: new Date().toISOString() }).eq('id', f.id);
+      if (!error) andrade++;
+    }
+    backfilling = false;
+    if (andrade && onSaved) onSaved();
+  }
+
+  return { setup, setUser, open, backfill };
 })();
