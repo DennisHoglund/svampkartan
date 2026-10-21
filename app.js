@@ -109,7 +109,7 @@
       window.SvampFynd.setUser(session.user.id);
       if (currentUserId !== session.user.id) {
         currentUserId = session.user.id;
-        loadFynd();
+        loadFynd().then(trySync);
       }
     } else {
       currentUserId = null;
@@ -117,19 +117,68 @@
     }
   }
 
+  const CACHE_KEY = 'svamp-fynd-cache';
+
+  // Hämtar fynd från servern (eller senaste sparade listan offline) och lägger till köade fynd
   async function loadFynd(quiet) {
-    const { data, error } = await sb.from('svamp_fynd')
-      .select('id, art, mangd, anteckning, lat, lon, funnen_at, foto_path, vader')
-      .order('funnen_at', { ascending: false });
+    let server = null;
+    let error = null;
+    try {
+      const res = await sb.from('svamp_fynd')
+        .select('id, art, mangd, anteckning, lat, lon, funnen_at, foto_path, vader')
+        .order('funnen_at', { ascending: false });
+      server = res.data;
+      error = res.error;
+    } catch (e) { error = e; }
+
+    let offline = false;
     if (error) {
-      const saknas = (error.code === '42P01') || /does not exist|not find/i.test(error.message || '');
-      window.SvampMap.toast(saknas ? 'Tabellen svamp_fynd saknas – kör supabase/schema.sql.' : 'Kunde inte hämta fynd: ' + error.message, 'error', 6000);
-      return;
+      offline = window.SvampKo.isNetworkError(error);
+      if (!offline) {
+        const saknas = (error.code === '42P01') || /does not exist|not find/i.test(error.message || '');
+        window.SvampMap.toast(saknas ? 'Tabellen svamp_fynd saknas – kör supabase/schema.sql.' : 'Kunde inte hämta fynd: ' + error.message, 'error', 6000);
+      }
+      try { server = JSON.parse(localStorage.getItem(CACHE_KEY) || '[]'); } catch (e) { server = []; }
+    } else {
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(server || [])); } catch (e) {}
     }
-    window.SvampMap.showFynd(data || []);
-    window.SvampFynd.backfill(data);
-    if (!quiet) window.SvampMap.toast(data && data.length ? data.length + ' fynd på kartan' : 'Databasen är klar · inga fynd än', 'ok', 2500);
+
+    const ko = currentUserId ? await window.SvampKo.forUser(currentUserId).catch(() => []) : [];
+    const koIds = new Set(ko.map((i) => i.id));
+    const pending = ko.map((i) => Object.assign({}, i.row, { _pending: true, _harFoto: !!i.blob }));
+    const list = pending.concat((server || []).filter((f) => !koIds.has(f.id)));
+
+    window.SvampMap.showFynd(list);
+    updateBadge(ko.length);
+    if (!error) window.SvampFynd.backfill(server);
+    if (!quiet) {
+      if (offline) window.SvampMap.toast('Ingen täckning – visar sparade fynd', 'ok', 3000);
+      else if (!error) window.SvampMap.toast(list.length ? list.length + ' fynd på kartan' : 'Databasen är klar · inga fynd än', 'ok', 2500);
+    }
   }
+
+  function updateBadge(n) {
+    const el = $('queue-badge');
+    el.hidden = !n;
+    el.textContent = n + ' väntar';
+  }
+
+  // Ladda upp kön när det finns täckning
+  let syncTimer = null;
+  async function trySync() {
+    if (!currentUserId || !navigator.onLine) return;
+    const ko = await window.SvampKo.forUser(currentUserId).catch(() => []);
+    if (!ko.length) return;
+    const res = await window.SvampFynd.sync();
+    if (res && res.sent) window.SvampMap.toast(res.sent + (res.sent === 1 ? ' fynd uppladdat' : ' fynd uppladdade'), 'ok', 2500);
+  }
+  window.addEventListener('online', trySync);
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') trySync(); });
+  syncTimer = setInterval(trySync, 60000);
+  $('queue-badge').addEventListener('click', async () => {
+    if (!navigator.onLine) { window.SvampMap.toast('Ingen täckning just nu – försöker igen automatiskt.', 'ok', 3000); return; }
+    await trySync();
+  });
 
   sb.auth.onAuthStateChange((_event, session) => render(session));
   sb.auth.getSession().then(({ data }) => render(data.session));

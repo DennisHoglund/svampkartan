@@ -169,20 +169,10 @@ window.SvampFynd = (function () {
     btn.disabled = true;
 
     try {
-      let foto_path = null;
       if (!state.blob && $('fynd-foto').files && $('fynd-foto').files.length) {
         throw new Error('Fotot hann inte förberedas – vänta en sekund och tryck Spara igen.');
       }
-      if (state.blob) {
-        setMsg('Laddar upp foto…');
-        const typ = state.blob.type || 'image/jpeg';
-        const ext = typ === 'image/png' ? 'png' : typ === 'image/heic' ? 'heic' : typ === 'image/webp' ? 'webp' : 'jpg';
-        foto_path = userId + '/' + state.id + '.' + ext;
-        const up = await sb.storage.from(BUCKET).upload(foto_path, state.blob, { contentType: typ, upsert: true });
-        if (up.error) throw up.error;
-      }
 
-      setMsg('Sparar…');
       const tid = $('fynd-tid').value ? new Date($('fynd-tid').value) : new Date();
       const row = {
         id: state.id,
@@ -193,32 +183,47 @@ window.SvampFynd = (function () {
         lon: state.point.lon,
         noggrannhet: state.point.noggrannhet,
         placerad: !!state.point.placerad,
-        foto_path,
+        foto_path: null,
+        vader: null,
         funnen_at: tid.toISOString()
       };
-      setMsg('Hämtar väder…');
-      row.vader = await window.SvampVader.hamta(row.lat, row.lon, tid);
 
-      setMsg('Sparar…');
-      const { error } = await sb.from('svamp_fynd').insert(row);
-      if (error) {
-        if (foto_path) await sb.storage.from(BUCKET).remove([foto_path]);
-        throw error;
+      let fotoPath = null;
+      let typ = null;
+      if (state.blob) {
+        typ = state.blob.type || 'image/jpeg';
+        const ext = typ === 'image/png' ? 'png' : typ === 'image/heic' ? 'heic' : typ === 'image/webp' ? 'webp' : 'jpg';
+        fotoPath = userId + '/' + state.id + '.' + ext;
       }
+
+      // 1. Spara alltid i telefonen först – då försvinner inget även utan täckning
+      await window.SvampKo.put({ id: row.id, userId, row, blob: state.blob, typ, fotoPath, created: Date.now() });
 
       store.set(LAST_ART_KEY, state.art);
       const namn = window.svampArt(state.art).namn;
       close();
-      window.SvampMap.toast(namn + ' sparad', 'ok', 2500);
-      if (onSaved) onSaved();
+
+      // 2. Försök ladda upp direkt
+      const res = await sync();
+      if (res && res.sent && !res.left) {
+        window.SvampMap.toast(namn + ' sparad', 'ok', 2500);
+      } else if (res && res.error && !res.offline) {
+        window.SvampMap.toast(namn + ' sparad i telefonen. Uppladdning misslyckades: ' + (res.error.message || res.error), 'error', 6000);
+      } else {
+        window.SvampMap.toast(namn + ' sparad i telefonen – laddas upp när du har täckning', 'ok', 4000);
+      }
     } catch (err) {
-      const m = (err && err.message) || '';
-      setMsg(/fetch|network|load failed/i.test(m)
-        ? 'Ingen kontakt med servern. Försök igen när du har täckning.'
-        : 'Kunde inte spara: ' + m, 'error');
+      setMsg('Kunde inte spara: ' + ((err && err.message) || err), 'error');
     } finally {
       btn.disabled = false;
     }
+  }
+
+  async function sync() {
+    if (!userId) return null;
+    const res = await window.SvampKo.sync(sb, userId);
+    if (onSaved) onSaved();
+    return res;
   }
 
   // ---------- Popup: foto och ta bort ----------
@@ -254,6 +259,12 @@ window.SvampFynd = (function () {
   async function remove(pop) {
     if (!pop) return;
     if (!confirm('Ta bort fyndet? Det går inte att ångra.')) return;
+    if (pop.dataset.pending === '1') {
+      await window.SvampKo.del(pop.dataset.id);
+      window.SvampMap.toast('Fyndet borttaget', 'ok', 2000);
+      if (onSaved) onSaved();
+      return;
+    }
     const { error } = await sb.from('svamp_fynd').delete().eq('id', pop.dataset.id);
     if (error) { window.SvampMap.toast('Kunde inte ta bort: ' + error.message, 'error', 5000); return; }
     if (pop.dataset.foto) await sb.storage.from(BUCKET).remove([pop.dataset.foto]);
@@ -279,5 +290,5 @@ window.SvampFynd = (function () {
     if (andrade && onSaved) onSaved();
   }
 
-  return { setup, setUser, open, backfill };
+  return { setup, setUser, open, backfill, sync };
 })();

@@ -38,6 +38,7 @@ Safari → Dela → **Lägg till på hemskärmen**.
 | `map.js` | Karta, lager, min position, fyndmarkörer |
 | `arter.js` | Arter med namn och färg |
 | `vader.js` | Regn och temperatur 10 dygn före fyndet (Open-Meteo) |
+| `ko.js` | Offline-kö i IndexedDB, laddar upp när täckning finns |
 | `fynd.js` | Nytt fynd, foto, spara, ta bort |
 | `sw.js` | Offline: appfiler nätet först, kartrutor cachas (max 1500) |
 | `manifest.webmanifest` | PWA-inställningar |
@@ -48,5 +49,4 @@ Safari → Dela → **Lägg till på hemskärmen**.
 - iPhone sparar lösenordet i nyckelringen och fyller i med Face ID.
 
 ## Nästa steg
-6. Offline-kö för fynd utan täckning
 7. Filter och säsongsvy

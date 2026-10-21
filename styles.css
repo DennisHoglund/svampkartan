@@ -330,3 +330,9 @@ textarea:focus { border-color: var(--accent); box-shadow: var(--focus); }
 }
 
 .file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+
+/* Offline-kö */
+.badge { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 600; }
+.fynd-pin.pending svg { opacity: .7; }
+.fynd-pin.pending svg path { stroke-dasharray: 3 2; }
+.pop-pending { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--brown); }

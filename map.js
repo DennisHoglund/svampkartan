@@ -135,9 +135,9 @@ window.SvampMap = (function () {
     return { lat: c.lat, lon: c.lng, noggrannhet: null, placerad: true };
   }
 
-  function pinIcon(farg) {
+  function pinIcon(farg, pending) {
     return L.divIcon({
-      className: 'fynd-pin',
+      className: 'fynd-pin' + (pending ? ' pending' : ''),
       html: '<svg viewBox="0 0 24 32" width="26" height="34" aria-hidden="true">' +
             '<path d="M12 1C6 1 2 5.5 2 11c0 7.5 10 20 10 20s10-12.5 10-20C22 5.5 18 1 12 1z" fill="' + farg + '" stroke="#fff" stroke-width="2"/>' +
             '<circle cx="12" cy="11" r="3.5" fill="#fff"/></svg>',
@@ -155,14 +155,16 @@ window.SvampMap = (function () {
     list.forEach((f) => {
       const art = window.svampArt(f.art);
       const datum = new Date(f.funnen_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
-      const html = '<div class="pop" data-id="' + esc(f.id) + '" data-foto="' + esc(f.foto_path || '') + '">' +
-                   (f.foto_path ? '<div class="pop-foto"><span class="pop-meta">Laddar foto…</span></div>' : '') +
+      const pending = !!f._pending;
+      const html = '<div class="pop" data-id="' + esc(f.id) + '" data-foto="' + esc(pending ? '' : (f.foto_path || '')) + '" data-pending="' + (pending ? '1' : '') + '">' +
+                   (pending ? '<p class="pop-pending">Väntar på uppladdning' + (f._harFoto ? ' (med foto)' : '') + '</p>' : '') +
+                   (!pending && f.foto_path ? '<div class="pop-foto"><span class="pop-meta">Laddar foto…</span></div>' : '') +
                    '<strong>' + esc(art.namn) + '</strong><br>' +
                    '<span class="pop-meta">' + esc(datum) + ' · mängd ' + esc(f.mangd) + '</span>' +
                    (f.vader ? '<br><span class="pop-meta">' + esc(window.SvampVader.text(f.vader)) + '</span>' : '') +
                    (f.anteckning ? '<p class="pop-not">' + esc(f.anteckning) + '</p>' : '') +
                    '<button type="button" class="pop-delete">Ta bort</button></div>';
-      L.marker([f.lat, f.lon], { icon: pinIcon(art.farg) }).bindPopup(html, { maxWidth: 260, minWidth: 200 }).addTo(fyndLayer);
+      L.marker([f.lat, f.lon], { icon: pinIcon(art.farg, pending) }).bindPopup(html, { maxWidth: 260, minWidth: 200 }).addTo(fyndLayer);
     });
   }
 
