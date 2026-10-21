@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="sv" data-theme="auto">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Svampkartan</title>
+  <meta name="description" content="Dina svampställen på kartan">
+  <meta name="theme-color" content="#FBF4E6">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Svampkartan">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+  <script>
+    try {
+      var t = localStorage.getItem('svamp-theme');
+      if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+    } catch (e) {}
+  </script>
+</head>
+<body>
+
+  <main id="view-loading" class="center">
+    <div class="spinner" aria-label="Laddar"></div>
+  </main>
+
+  <main id="view-login" class="center" hidden>
+    <section class="card login">
+      <img class="logo" src="icons/icon.svg" alt="" width="72" height="72">
+      <h1>Svampkartan</h1>
+      <p class="muted">Dina svampställen – bara för dig.</p>
+
+      <form id="form-email" novalidate>
+        <label for="email">E-post</label>
+        <input id="email" type="email" inputmode="email" autocomplete="email" autocapitalize="off" spellcheck="false" placeholder="namn@exempel.se" required>
+        <button class="btn primary" type="submit">Skicka kod</button>
+      </form>
+
+      <form id="form-code" novalidate hidden>
+        <p class="muted small">Vi har skickat en kod till <strong id="sent-to"></strong>.</p>
+        <label for="code">Kod</label>
+        <input id="code" class="code" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9]*" maxlength="10" placeholder="123456" required>
+        <button class="btn primary" type="submit">Logga in</button>
+        <div class="row">
+          <button class="btn ghost" type="button" id="btn-resend">Skicka ny kod</button>
+          <button class="btn ghost" type="button" id="btn-change-email">Byt e-post</button>
+        </div>
+      </form>
+
+      <p id="login-msg" class="msg" role="status" aria-live="polite"></p>
+    </section>
+  </main>
+
+  <div id="view-app" hidden>
+    <header class="topbar">
+      <div class="brand">
+        <img src="icons/icon.svg" alt="" width="28" height="28">
+        <span>Svampkartan</span>
+      </div>
+      <div class="actions">
+        <button class="icon-btn" id="btn-theme" type="button" aria-label="Byt tema">
+          <span id="theme-label">Auto</span>
+        </button>
+        <button class="icon-btn" id="btn-logout" type="button">Logga ut</button>
+      </div>
+    </header>
+
+    <main class="content">
+      <section class="card">
+        <h2>Välkommen</h2>
+        <p class="muted">Inloggad som <strong id="user-email"></strong>.</p>
+        <p>Kartan och dina fynd kommer i nästa steg.</p>
+      </section>
+
+      <section class="card">
+        <h3>Färgprov</h3>
+        <div class="swatches">
+          <span style="background:var(--bg)"></span>
+          <span style="background:var(--surface-2)"></span>
+          <span style="background:var(--accent)"></span>
+          <span style="background:var(--brown)"></span>
+          <span style="background:var(--text)"></span>
+        </div>
+        <button class="btn primary" type="button" disabled>Nytt fynd</button>
+      </section>
+    </main>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
