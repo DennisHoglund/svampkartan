@@ -141,8 +141,9 @@ window.SvampFynd = (function () {
       img.hidden = false;
       $('foto-text').textContent = 'Byt foto';
     } catch (err) {
-      state.blob = null;
-      $('foto-text').textContent = 'Kunde inte läsa fotot – prova igen';
+      // Reserv: ladda upp originalet om nedskalningen inte fungerar i webbläsaren
+      state.blob = file;
+      $('foto-text').textContent = 'Foto valt (' + Math.round(file.size / 1024) + ' kB)';
     }
   }
 
@@ -169,10 +170,15 @@ window.SvampFynd = (function () {
 
     try {
       let foto_path = null;
+      if (!state.blob && $('fynd-foto').files && $('fynd-foto').files.length) {
+        throw new Error('Fotot hann inte förberedas – vänta en sekund och tryck Spara igen.');
+      }
       if (state.blob) {
         setMsg('Laddar upp foto…');
-        foto_path = userId + '/' + state.id + '.jpg';
-        const up = await sb.storage.from(BUCKET).upload(foto_path, state.blob, { contentType: 'image/jpeg', upsert: true });
+        const typ = state.blob.type || 'image/jpeg';
+        const ext = typ === 'image/png' ? 'png' : typ === 'image/heic' ? 'heic' : typ === 'image/webp' ? 'webp' : 'jpg';
+        foto_path = userId + '/' + state.id + '.' + ext;
+        const up = await sb.storage.from(BUCKET).upload(foto_path, state.blob, { contentType: typ, upsert: true });
         if (up.error) throw up.error;
       }
 
@@ -217,24 +223,28 @@ window.SvampFynd = (function () {
     const pop = root && root.querySelector('.pop');
     if (!pop || !pop.dataset.foto) return;
     const box = pop.querySelector('.pop-foto');
-    if (!box || box.firstChild) return;
-    const url = await signedUrl(pop.dataset.foto);
-    if (!url) { box.remove(); return; }
+    if (!box || box.querySelector('img')) return;
+    const res = await signedUrl(pop.dataset.foto);
+    if (!res.url) {
+      box.innerHTML = '<span class="pop-meta">Kunde inte hämta fotot: ' + (res.error || 'okänt fel') + '</span>';
+      popup.update();
+      return;
+    }
     const img = new Image();
     img.alt = '';
-    img.onload = () => popup.update();
-    img.src = url;
-    img.addEventListener('click', () => window.open(url, '_blank'));
-    box.appendChild(img);
+    img.onload = () => { box.innerHTML = ''; box.appendChild(img); popup.update(); };
+    img.onerror = () => { box.innerHTML = '<span class="pop-meta">Fotot kunde inte visas.</span>'; popup.update(); };
+    img.addEventListener('click', () => window.open(res.url, '_blank'));
+    img.src = res.url;
   }
 
   async function signedUrl(path) {
     const hit = urlCache.get(path);
-    if (hit && hit.exp > Date.now()) return hit.url;
+    if (hit && hit.exp > Date.now()) return { url: hit.url };
     const { data, error } = await sb.storage.from(BUCKET).createSignedUrl(path, 3600);
-    if (error || !data) return null;
+    if (error || !data || !data.signedUrl) return { url: null, error: error ? error.message : 'ingen länk' };
     urlCache.set(path, { url: data.signedUrl, exp: Date.now() + 50 * 60 * 1000 });
-    return data.signedUrl;
+    return { url: data.signedUrl };
   }
 
   async function remove(pop) {

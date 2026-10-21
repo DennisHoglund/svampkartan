@@ -306,6 +306,7 @@ textarea:focus { border-color: var(--accent); box-shadow: var(--focus); }
 #fynd-tid { background: var(--surface); }
 
 .photo-pick {
+  position: relative;
   display: flex; align-items: center; gap: 12px;
   min-height: 56px; padding: 8px 14px;
   color: var(--text-2); background: var(--surface);
@@ -333,3 +334,5 @@ textarea:focus { border-color: var(--accent); box-shadow: var(--focus); }
   font: inherit; font-size: 13px; color: var(--danger);
   background: transparent; border: 1px solid var(--border); border-radius: 8px; cursor: pointer;
 }
+
+.file-input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }

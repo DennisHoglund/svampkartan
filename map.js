@@ -153,7 +153,7 @@ window.SvampMap = (function () {
       const art = window.svampArt(f.art);
       const datum = new Date(f.funnen_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
       const html = '<div class="pop" data-id="' + esc(f.id) + '" data-foto="' + esc(f.foto_path || '') + '">' +
-                   (f.foto_path ? '<div class="pop-foto"></div>' : '') +
+                   (f.foto_path ? '<div class="pop-foto"><span class="pop-meta">Laddar foto…</span></div>' : '') +
                    '<strong>' + esc(art.namn) + '</strong><br>' +
                    '<span class="pop-meta">' + esc(datum) + ' · mängd ' + esc(f.mangd) + '</span>' +
                    (f.anteckning ? '<p class="pop-not">' + esc(f.anteckning) + '</p>' : '') +
