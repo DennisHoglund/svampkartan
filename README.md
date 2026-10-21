@@ -1,6 +1,6 @@
 # Svampkartan
 
-Privat PWA för att spara svampställen på kartan. Steg 1: appskal, Kantarell-tema (ljust/mörkt), ikoner, offline-stöd och inloggning med e-postkod via Supabase.
+Privat PWA för att spara svampställen på kartan. Steg 1: appskal, Kantarell-tema (ljust/mörkt), ikoner, offline-stöd och inloggning via Supabase.
 
 ## Kom igång
 
@@ -12,26 +12,14 @@ Privat PWA för att spara svampställen på kartan. Steg 1: appskal, Kantarell-t
 
 ### 2. Supabase (delar projekt med Jaktvind)
 Svampkartan använder Jaktvinds Supabase-projekt eftersom gratisnivån bara tillåter två projekt.
+Inloggning sker med e-post och lösenord – samma konto som i Jaktvind. Inga inställningar i Supabase ändras.
+
 Allt eget har prefix så att Jaktvinds tabeller (`logg`, `platser`) aldrig berörs:
 - tabeller: `svamp_*`
 - bucket: `svamp-foton`
 
-Enda inställningen som ändras:
-**Authentication → Emails → Templates → Magic Link** – visa koden. Jaktvind loggar in med lösenord och använder inte den här mallen.
-
-Ämne: `Din kod till Svampkartan`
-
-```html
-<h2>Svampkartan</h2>
-<p>Din inloggningskod:</p>
-<p style="font-size:28px;letter-spacing:4px"><strong>{{ .Token }}</strong></p>
-<p>Koden gäller i en timme.</p>
-```
-
-Site URL och registreringsinställningar lämnas orörda. Logga in med samma e-post som i Jaktvind – det är samma konto.
-
 ### 3. Första inloggningen
-Öppna `https://dennishoglund.github.io/svampkartan/` i Safari och logga in med e-post och kod.
+Öppna `https://dennishoglund.github.io/svampkartan/` i Safari och logga in med samma e-post och lösenord som i Jaktvind.
 
 ### 4. Installera på iPhone
 Safari → Dela → **Lägg till på hemskärmen**.
@@ -41,16 +29,15 @@ Safari → Dela → **Lägg till på hemskärmen**.
 |---|---|
 | `index.html` | Inloggning och appvy |
 | `styles.css` | Kantarell-tema, ljust/mörkt via `prefers-color-scheme` + manuellt val |
-| `app.js` | Tema, inloggning med kod, session |
+| `app.js` | Tema, inloggning, session |
 | `config.js` | Supabase-URL och nyckel |
 | `sw.js` | Offline-cache – höj `CACHE`-versionen vid varje deploy |
 | `manifest.webmanifest` | PWA-inställningar |
 | `icons/` | Kartnålsikonen i alla storlekar |
 
 ## Bra att veta
-- Supabase inbyggda e-post har en låg gräns för antal mejl per timme. Det räcker för en användare.
-- Om iPhone stänger appen medan du hämtar koden i Mail ligger kodsteget kvar när du öppnar den igen.
-- Koden autofylls ofta från Mail ovanför tangentbordet.
+- Apparna ligger på samma domän och samma Supabase-projekt, så inloggningen kan delas mellan Svampkartan och Jaktvind.
+- iPhone sparar lösenordet i nyckelringen och fyller i med Face ID.
 
 ## Nästa steg
 2. Tabell `fynd`, RLS och privat bucket för foton
