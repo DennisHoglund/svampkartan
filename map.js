@@ -4,6 +4,7 @@ window.SvampMap = (function () {
 
   const VIEW_KEY = 'svamp-map-view';
   const LAYER_KEY = 'svamp-map-layer';
+  const TRAILS_KEY = 'svamp-map-trails';
   const DEFAULT_VIEW = { lat: 59.76, lng: 18.70, zoom: 9 }; // Roslagen
 
   const store = {
@@ -61,7 +62,9 @@ window.SvampMap = (function () {
     const startLayer = layers[store.get(LAYER_KEY)] ? store.get(LAYER_KEY) : 'Terräng';
     layers[startLayer].addTo(map);
     setSatClass(startLayer);
+    if (store.get(TRAILS_KEY) === '1') overlays['Vandringsleder'].addTo(map);
     L.control.layers(layers, overlays, { position: 'topright' }).addTo(map);
+    map.on('overlayadd overlayremove', (e) => store.set(TRAILS_KEY, e.type === 'overlayadd' ? '1' : '0'));
     L.control.scale({ imperial: false, position: 'bottomleft' }).addTo(map);
 
     map.on('baselayerchange', (e) => { store.set(LAYER_KEY, e.name); setSatClass(e.name); });

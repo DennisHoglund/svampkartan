@@ -189,13 +189,7 @@ input.code { font-size: 24px; letter-spacing: .35em; text-align: center; font-va
 #map:not(.sat) .leaflet-tile-pane { filter: var(--map-filter); }
 
 .leaflet-container { font: inherit; }
-.leaflet-control-layers, .leaflet-bar a, .leaflet-popup-content-wrapper, .leaflet-popup-tip {
-  background: var(--surface); color: var(--text);
-}
-.leaflet-control-layers { border: 1px solid var(--border) !important; border-radius: 10px !important; box-shadow: none !important; }
-.leaflet-control-layers-expanded { padding: 8px 12px; font-size: 15px; }
-.leaflet-control-layers label { margin: 4px 0; }
-.leaflet-control-layers-separator { border-top-color: var(--border); }
+.leaflet-popup-content-wrapper, .leaflet-popup-tip { background: var(--surface); color: var(--text); }
 .leaflet-control-attribution { font-size: 9px; background: color-mix(in srgb, var(--surface) 75%, transparent) !important; color: var(--text-2); }
 .leaflet-control-attribution a { color: var(--text-2); }
 .leaflet-control-scale-line { background: color-mix(in srgb, var(--surface) 75%, transparent); color: var(--text); border-color: var(--text-2); }
