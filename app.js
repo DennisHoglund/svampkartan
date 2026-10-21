@@ -98,14 +98,15 @@
 
   // ---------- Sessionsstyrning ----------
   let currentUserId = null;
+  let fyndReady = false;
 
   function render(session) {
     if (session && session.user) {
       $('user-email').textContent = session.user.email || '';
       show('app');
-      window.SvampMap.init(() => {
-        window.SvampMap.toast('Registrering av fynd kommer i nästa steg.');
-      });
+      window.SvampMap.init((point) => window.SvampFynd.open(point));
+      if (!fyndReady) { window.SvampFynd.setup(sb, () => loadFynd(true)); fyndReady = true; }
+      window.SvampFynd.setUser(session.user.id);
       if (currentUserId !== session.user.id) {
         currentUserId = session.user.id;
         loadFynd();
@@ -116,7 +117,7 @@
     }
   }
 
-  async function loadFynd() {
+  async function loadFynd(quiet) {
     const { data, error } = await sb.from('svamp_fynd')
       .select('id, art, mangd, anteckning, lat, lon, funnen_at, foto_path')
       .order('funnen_at', { ascending: false });
@@ -126,7 +127,7 @@
       return;
     }
     window.SvampMap.showFynd(data || []);
-    window.SvampMap.toast(data && data.length ? data.length + ' fynd på kartan' : 'Databasen är klar · inga fynd än', 'ok', 2500);
+    if (!quiet) window.SvampMap.toast(data && data.length ? data.length + ' fynd på kartan' : 'Databasen är klar · inga fynd än', 'ok', 2500);
   }
 
   sb.auth.onAuthStateChange((_event, session) => render(session));

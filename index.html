@@ -75,6 +75,59 @@
 
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
     <span id="user-email" hidden></span>
+
+    <!-- Placera fynd för hand -->
+    <div id="place-ui" hidden>
+      <div class="crosshair" aria-hidden="true">
+        <svg viewBox="0 0 24 32" width="34" height="44"><path d="M12 1C6 1 2 5.5 2 11c0 7.5 10 20 10 20s10-12.5 10-20C22 5.5 18 1 12 1z" fill="var(--accent)" stroke="#fff" stroke-width="2"/><circle cx="12" cy="11" r="3.5" fill="#fff"/></svg>
+      </div>
+      <div class="place-bar">
+        <p>Dra kartan så att nålen hamnar rätt</p>
+        <div class="row">
+          <button class="btn ghost" type="button" id="btn-place-cancel">Avbryt</button>
+          <button class="btn primary" type="button" id="btn-place-ok">Använd platsen</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Nytt fynd -->
+    <div id="sheet" class="sheet" hidden>
+      <div class="sheet-backdrop" id="sheet-backdrop"></div>
+      <form id="form-fynd" class="sheet-panel" novalidate>
+        <div class="sheet-head">
+          <h2>Nytt fynd</h2>
+          <button class="icon-btn" type="button" id="btn-sheet-close" aria-label="Stäng">Stäng</button>
+        </div>
+
+        <span class="lbl">Art</span>
+        <div id="art-grid" class="chips"></div>
+
+        <span class="lbl">Mängd</span>
+        <div id="mangd" class="seg"></div>
+
+        <span class="lbl">Plats</span>
+        <div class="place-row">
+          <span id="place-text"></span>
+          <button class="icon-btn" type="button" id="btn-place">Ändra</button>
+        </div>
+
+        <label class="lbl" for="fynd-tid">Datum och tid</label>
+        <input id="fynd-tid" type="datetime-local">
+
+        <span class="lbl">Foto</span>
+        <label class="photo-pick">
+          <input id="fynd-foto" type="file" accept="image/*" hidden>
+          <img id="foto-preview" alt="" hidden>
+          <span id="foto-text">Ta eller välj foto</span>
+        </label>
+
+        <label class="lbl" for="fynd-not">Anteckning</label>
+        <textarea id="fynd-not" rows="3" placeholder="Vid mossiga stenen under granarna"></textarea>
+
+        <p id="fynd-msg" class="msg" role="status" aria-live="polite"></p>
+        <button class="btn primary" type="submit" id="btn-save">Spara fynd</button>
+      </form>
+    </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -82,6 +135,7 @@
   <script src="config.js"></script>
   <script src="arter.js"></script>
   <script src="map.js"></script>
+  <script src="fynd.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

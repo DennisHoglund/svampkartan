@@ -152,10 +152,13 @@ window.SvampMap = (function () {
     list.forEach((f) => {
       const art = window.svampArt(f.art);
       const datum = new Date(f.funnen_at).toLocaleDateString('sv-SE', { day: 'numeric', month: 'short', year: 'numeric' });
-      const html = '<strong>' + esc(art.namn) + '</strong><br>' +
+      const html = '<div class="pop" data-id="' + esc(f.id) + '" data-foto="' + esc(f.foto_path || '') + '">' +
+                   (f.foto_path ? '<div class="pop-foto"></div>' : '') +
+                   '<strong>' + esc(art.namn) + '</strong><br>' +
                    '<span class="pop-meta">' + esc(datum) + ' · mängd ' + esc(f.mangd) + '</span>' +
-                   (f.anteckning ? '<br>' + esc(f.anteckning) : '');
-      L.marker([f.lat, f.lon], { icon: pinIcon(art.farg) }).bindPopup(html).addTo(fyndLayer);
+                   (f.anteckning ? '<p class="pop-not">' + esc(f.anteckning) + '</p>' : '') +
+                   '<button type="button" class="pop-delete">Ta bort</button></div>';
+      L.marker([f.lat, f.lon], { icon: pinIcon(art.farg) }).bindPopup(html, { maxWidth: 260, minWidth: 200 }).addTo(fyndLayer);
     });
   }
 
@@ -169,5 +172,30 @@ window.SvampMap = (function () {
     toastTimer = setTimeout(() => { el.hidden = true; }, ms || 3500);
   }
 
-  return { init, showFynd, toast, invalidate: () => map && map.invalidateSize() };
+  // Placeringsläge: kartan centreras på punkten, användaren drar kartan och bekräftar
+  function pickPoint(start) {
+    return new Promise((resolve) => {
+      const ui = document.getElementById('place-ui');
+      setFollow(false);
+      map.setView([start.lat, start.lon], Math.max(map.getZoom(), 17));
+      ui.hidden = false;
+      const done = (val) => {
+        ui.hidden = true;
+        okBtn.removeEventListener('click', onOk);
+        cancelBtn.removeEventListener('click', onCancel);
+        resolve(val);
+      };
+      const okBtn = document.getElementById('btn-place-ok');
+      const cancelBtn = document.getElementById('btn-place-cancel');
+      const onOk = () => { const c = map.getCenter(); done({ lat: c.lat, lon: c.lng, noggrannhet: null, placerad: true }); };
+      const onCancel = () => done(null);
+      okBtn.addEventListener('click', onOk);
+      cancelBtn.addEventListener('click', onCancel);
+    });
+  }
+
+  function onPopupOpen(fn) { map.on('popupopen', (e) => fn(e.popup)); }
+
+  return { init, showFynd, toast, pickPoint, onPopupOpen, currentPoint: () => currentPoint(),
+           invalidate: () => map && map.invalidateSize() };
 })();
