@@ -227,13 +227,13 @@ window.SvampFynd = (function () {
     const res = await signedUrl(pop.dataset.foto);
     if (!res.url) {
       box.innerHTML = '<span class="pop-meta">Kunde inte hämta fotot: ' + (res.error || 'okänt fel') + '</span>';
-      popup.update();
+      popup.setContent(pop);
       return;
     }
     const img = new Image();
     img.alt = '';
-    img.onload = () => { box.innerHTML = ''; box.appendChild(img); popup.update(); };
-    img.onerror = () => { box.innerHTML = '<span class="pop-meta">Fotot kunde inte visas.</span>'; popup.update(); };
+    img.onload = () => { box.innerHTML = ''; box.appendChild(img); popup.setContent(pop); };
+    img.onerror = () => { box.innerHTML = '<span class="pop-meta">Fotot kunde inte visas.</span>'; popup.setContent(pop); };
     img.addEventListener('click', () => window.open(res.url, '_blank'));
     img.src = res.url;
   }
