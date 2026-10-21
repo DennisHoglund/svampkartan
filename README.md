@@ -35,7 +35,9 @@ Safari → Dela → **Lägg till på hemskärmen**.
 | `styles.css` | Kantarell-tema, ljust/mörkt via `prefers-color-scheme` + manuellt val |
 | `app.js` | Tema, inloggning, session |
 | `config.js` | Supabase-URL och nyckel |
-| `sw.js` | Offline-cache – höj `CACHE`-versionen vid varje deploy |
+| `map.js` | Karta, lager, min position, fyndmarkörer |
+| `arter.js` | Arter med namn och färg |
+| `sw.js` | Offline: appfiler nätet först, kartrutor cachas (max 1500) |
 | `manifest.webmanifest` | PWA-inställningar |
 | `icons/` | Kartnålsikonen i alla storlekar |
 
@@ -44,5 +46,4 @@ Safari → Dela → **Lägg till på hemskärmen**.
 - iPhone sparar lösenordet i nyckelringen och fyller i med Face ID.
 
 ## Nästa steg
-3. Karta med lager och din position
 4. Lägg till fynd

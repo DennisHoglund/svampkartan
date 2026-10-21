@@ -1,5 +1,5 @@
 // Höj versionen vid varje deploy så att telefonen hämtar nya filer.
-const CACHE = 'svampkartan-v3';
+const CACHE = 'svampkartan-v4';
 
 const SHELL = [
   './',
@@ -7,6 +7,8 @@ const SHELL = [
   './styles.css',
   './app.js',
   './config.js',
+  './arter.js',
+  './map.js',
   './manifest.webmanifest',
   './icons/icon.svg',
   './icons/icon-192.png',
@@ -14,7 +16,20 @@ const SHELL = [
   './icons/apple-touch-icon.png'
 ];
 
-const CDN_HOSTS = ['cdn.jsdelivr.net', 'unpkg.com'];
+const CDN_HOSTS = ['cdn.jsdelivr.net', 'unpkg.com', 'cdnjs.cloudflare.com'];
+
+// Kartrutor sparas i en egen cache så att kartan fungerar där täckningen är dålig
+const TILE_CACHE = 'svampkartan-tiles';
+const TILE_MAX = 1500;
+const TILE_HOSTS = ['tile.opentopomap.org', 'tile.openstreetmap.org', 'tile-cyclosm.openstreetmap.fr',
+                    'server.arcgisonline.com', 'tile.waymarkedtrails.org'];
+const isTile = (host) => TILE_HOSTS.some((h) => host === h || host.endsWith('.' + h));
+
+async function trimTiles() {
+  const c = await caches.open(TILE_CACHE);
+  const keys = await c.keys();
+  for (let i = 0; i < keys.length - TILE_MAX; i++) await c.delete(keys[i]);
+}
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE).then((c) => c.addAll(SHELL)));
@@ -24,7 +39,7 @@ self.addEventListener('install', (event) => {
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys()
-      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
+      .then((keys) => Promise.all(keys.filter((k) => k !== CACHE && k !== TILE_CACHE).map((k) => caches.delete(k))))
       .then(() => self.clients.claim())
   );
 });
@@ -45,6 +60,17 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Kartrutor: cache först, annars nätet (sparas för offline)
+  if (isTile(url.hostname)) {
+    event.respondWith(
+      caches.open(TILE_CACHE).then((c) => c.match(req).then((hit) => hit || fetch(req).then((res) => {
+        if (res.ok || res.type === 'opaque') { c.put(req, res.clone()); trimTiles(); }
+        return res;
+      })))
+    );
+    return;
+  }
+
   // Allt annat externt (Supabase m.m.) går direkt till nätet
   if (url.origin !== self.location.origin) return;
 
@@ -61,14 +87,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Egna filer: visa cachad direkt, uppdatera i bakgrunden
+  // Egna filer: nätet först så att nya versioner alltid används, cache vid offline
   event.respondWith(
-    caches.match(req).then((hit) => {
-      const fresh = fetch(req).then((res) => {
+    fetch(req)
+      .then((res) => {
         if (res.ok) caches.open(CACHE).then((c) => c.put(req, res.clone()));
         return res;
-      }).catch(() => hit);
-      return hit || fresh;
-    })
+      })
+      .catch(() => caches.match(req))
   );
 });

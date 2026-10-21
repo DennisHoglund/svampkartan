@@ -13,6 +13,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
   <link rel="stylesheet" href="styles.css">
   <script>
     try {
@@ -60,30 +61,27 @@
       </div>
     </header>
 
-    <main class="content">
-      <section class="card">
-        <h2>Välkommen</h2>
-        <p class="muted">Inloggad som <strong id="user-email"></strong>.</p>
-        <p id="db-status" class="muted small">Kontrollerar databasen…</p>
-        <p>Kartan kommer i nästa steg.</p>
-      </section>
+    <div id="map" aria-label="Karta"></div>
 
-      <section class="card">
-        <h3>Färgprov</h3>
-        <div class="swatches">
-          <span style="background:var(--bg)"></span>
-          <span style="background:var(--surface-2)"></span>
-          <span style="background:var(--accent)"></span>
-          <span style="background:var(--brown)"></span>
-          <span style="background:var(--text)"></span>
-        </div>
-        <button class="btn primary" type="button" disabled>Nytt fynd</button>
-      </section>
-    </main>
+    <div class="map-ui">
+      <button class="fab" id="btn-locate" type="button" aria-label="Visa min position">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+      </button>
+      <button class="fab-main" id="btn-add" type="button">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+        Nytt fynd
+      </button>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <span id="user-email" hidden></span>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <script src="config.js"></script>
+  <script src="arter.js"></script>
+  <script src="map.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

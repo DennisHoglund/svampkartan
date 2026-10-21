@@ -182,3 +182,71 @@ input.code { font-size: 24px; letter-spacing: .35em; text-align: center; font-va
   animation: spin .8s linear infinite;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* ---------- Karta ---------- */
+#view-app { position: relative; display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
+#map { flex: 1; min-height: 0; background: var(--surface-2); }
+#map:not(.sat) .leaflet-tile-pane { filter: var(--map-filter); }
+
+.leaflet-container { font: inherit; }
+.leaflet-control-layers, .leaflet-bar a, .leaflet-popup-content-wrapper, .leaflet-popup-tip {
+  background: var(--surface); color: var(--text);
+}
+.leaflet-control-layers { border: 1px solid var(--border) !important; border-radius: 10px !important; box-shadow: none !important; }
+.leaflet-control-layers-expanded { padding: 8px 12px; font-size: 15px; }
+.leaflet-control-layers label { margin: 4px 0; }
+.leaflet-control-layers-separator { border-top-color: var(--border); }
+.leaflet-control-attribution { font-size: 9px; background: color-mix(in srgb, var(--surface) 75%, transparent) !important; color: var(--text-2); }
+.leaflet-control-attribution a { color: var(--text-2); }
+.leaflet-control-scale-line { background: color-mix(in srgb, var(--surface) 75%, transparent); color: var(--text); border-color: var(--text-2); }
+.leaflet-popup-content { margin: 10px 14px; font-size: 15px; line-height: 1.4; }
+.leaflet-container a.leaflet-popup-close-button { color: var(--text-2); }
+.pop-meta { color: var(--text-2); font-size: 13px; }
+
+.pos-dot { fill: #2F7DE1; fill-opacity: 1; stroke: #fff; stroke-width: 3; }
+.acc-circle { fill: #2F7DE1; fill-opacity: .12; stroke: #2F7DE1; stroke-opacity: .35; stroke-width: 1; }
+.fynd-pin { background: none; border: none; }
+
+.map-ui {
+  position: absolute;
+  left: 0; right: 0;
+  bottom: calc(env(safe-area-inset-bottom) + 28px);
+  z-index: 500;
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+.map-ui > * { pointer-events: auto; }
+.fab-main {
+  display: inline-flex; align-items: center; gap: 8px;
+  min-height: 52px; padding: 0 22px;
+  font: inherit; font-weight: 700; font-size: 17px;
+  color: var(--on-accent); background: var(--accent);
+  border: none; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .2);
+}
+.fab-main:active { background: var(--accent-hover); }
+.fab {
+  position: absolute; right: 16px; bottom: 0;
+  width: 52px; height: 52px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 50%; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+}
+.fab.active { color: #2F7DE1; }
+
+.toast {
+  position: absolute;
+  left: 50%; transform: translateX(-50%);
+  top: calc(env(safe-area-inset-top) + 72px);
+  z-index: 600;
+  max-width: calc(100% - 32px);
+  padding: 10px 16px;
+  font-size: 15px;
+  color: var(--text); background: var(--surface);
+  border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, .15);
+}
+.toast.error { color: var(--danger); }
+.toast.ok { color: var(--ok); }

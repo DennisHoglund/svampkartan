@@ -97,43 +97,51 @@
   });
 
   // ---------- Sessionsstyrning ----------
+  let currentUserId = null;
+
   function render(session) {
     if (session && session.user) {
-      currentUserId = session.user.id;
       $('user-email').textContent = session.user.email || '';
       show('app');
-      checkDb();
+      window.SvampMap.init(() => {
+        window.SvampMap.toast('Registrering av fynd kommer i nästa steg.');
+      });
+      if (currentUserId !== session.user.id) {
+        currentUserId = session.user.id;
+        loadFynd();
+      }
     } else {
+      currentUserId = null;
       show('login');
     }
   }
 
-  async function checkDb() {
-    const el = $('db-status');
-    const fynd = await sb.from('svamp_fynd').select('id', { count: 'exact', head: true });
-    const foton = await sb.storage.from('svamp-foton').list(sb_uid(), { limit: 1 });
-    if (fynd.error) {
-      el.textContent = 'Tabellen svamp_fynd saknas – kör supabase/schema.sql.';
-      el.className = 'msg error';
-    } else if (foton.error) {
-      el.textContent = 'Fotobucketen svamp-foton saknas – kör supabase/schema.sql.';
-      el.className = 'msg error';
-    } else {
-      el.textContent = 'Databasen är klar · ' + (fynd.count || 0) + ' fynd sparade';
-      el.className = 'msg ok';
+  async function loadFynd() {
+    const { data, error } = await sb.from('svamp_fynd')
+      .select('id, art, mangd, anteckning, lat, lon, funnen_at, foto_path')
+      .order('funnen_at', { ascending: false });
+    if (error) {
+      const saknas = (error.code === '42P01') || /does not exist|not find/i.test(error.message || '');
+      window.SvampMap.toast(saknas ? 'Tabellen svamp_fynd saknas – kör supabase/schema.sql.' : 'Kunde inte hämta fynd: ' + error.message, 'error', 6000);
+      return;
     }
+    window.SvampMap.showFynd(data || []);
+    window.SvampMap.toast(data && data.length ? data.length + ' fynd på kartan' : 'Databasen är klar · inga fynd än', 'ok', 2500);
   }
-
-  let currentUserId = null;
-  function sb_uid() { return currentUserId || ''; }
 
   sb.auth.onAuthStateChange((_event, session) => render(session));
   sb.auth.getSession().then(({ data }) => render(data.session));
 
   // ---------- Service worker ----------
   if ('serviceWorker' in navigator) {
+    // Ladda om en gång när en ny version av appen tagit över
+    let reloaded = false;
+    const hadController = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (hadController && !reloaded) { reloaded = true; location.reload(); }
+    });
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('sw.js').catch(() => {});
+      navigator.serviceWorker.register('sw.js').then((reg) => reg.update()).catch(() => {});
     });
   }
 })();
