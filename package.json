@@ -3,7 +3,8 @@
   "private": true,
   "description": "Svampkartan – PWA för svampställen",
   "scripts": {
-    "test": "playwright test",
+    "test": "node tests/kontrollera-testplan.js && playwright test",
+    "testplan": "node tests/kontrollera-testplan.js",
     "test:ui": "playwright test --ui",
     "rapport": "npx http-server rapport -p 9324 -o"
   },

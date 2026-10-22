@@ -39,6 +39,9 @@ jobs:
       - name: Installera webbläsare (WebKit och Chromium)
         run: npx playwright install --with-deps webkit chromium
 
+      - name: Kontrollera att testplanen stämmer med testerna
+        run: node tests/kontrollera-testplan.js
+
       - name: Hämta tidigare körningar till trenden
         run: |
           mkdir -p rapport
@@ -58,7 +61,7 @@ jobs:
             --exclude .git --exclude .github --exclude node_modules \
             --exclude tests --exclude test-results --exclude rapport --exclude supabase \
             --exclude package.json --exclude package-lock.json --exclude playwright.config.js \
-            --exclude README.md --exclude SPEC.md --exclude CLAUDE.md --exclude AGENTS.md --exclude .gitignore
+            --exclude README.md --exclude SPEC.md --exclude testplan --exclude CLAUDE.md --exclude AGENTS.md --exclude .gitignore
           cp -r rapport _site/rapport
           touch _site/.nojekyll
 

@@ -27,8 +27,10 @@ Läs `SPEC.md` för hela specifikationen. Det här är reglerna som gäller vid 
 3. Kör testerna: `npx playwright test` (lokalt räcker `--project="Android (Chromium)"` om WebKit saknas).
 4. Lägg till eller uppdatera tester i `tests/` för ny funktionalitet. All extern trafik mockas i `tests/mock.js`.
    Använd `bild(page, 'Namn')` för skärmdumpar som ska synas i rapporten.
-5. Uppdatera `SPEC.md` (och `README.md` vid behov) så att den stämmer med koden.
-6. Committa med beskrivande svenskt meddelande och pusha till `main`. CI testar och publicerar.
+5. Lägg till eller uppdatera testfall i `testplan/` (fil i `testfall/` + rad i `index.md`) och koppla automatiserade tester med
+   `{ annotation: { type: 'testfall', description: 'TC-…' } }`. Kör `npm run testplan`.
+6. Uppdatera `SPEC.md` (och `README.md` vid behov) så att den stämmer med koden.
+7. Committa med beskrivande svenskt meddelande och pusha till `main`. CI testar och publicerar.
 
 ## Design
 - Färgprofil **Kantarell** med ljust och mörkt läge via CSS-variabler i `styles.css` (`:root`, `prefers-color-scheme`, `[data-theme]`).

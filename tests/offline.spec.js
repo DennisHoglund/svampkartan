@@ -1,7 +1,7 @@
 const { test, expect, bild } = require('./hjalp');
 
 test.describe('Utan täckning', () => {
-  test('fynd sparas i telefonen och laddas upp när täckningen kommer tillbaka', async ({ kartan: page, context, api }) => {
+  test('fynd sparas i telefonen och laddas upp när täckningen kommer tillbaka', { annotation: { type: 'testfall', description: 'TC-OFF-01' } }, async ({ kartan: page, context, api }) => {
     await context.setOffline(true);
     api.nere = true;
 
@@ -30,7 +30,7 @@ test.describe('Utan täckning', () => {
     expect(api.uppladdade).toContain(uppladdat.foto_path);
   });
 
-  test('köade fynd finns kvar efter omstart av appen', async ({ kartan: page, context, api }) => {
+  test('köade fynd finns kvar efter omstart av appen', { annotation: { type: 'testfall', description: 'TC-OFF-02' } }, async ({ kartan: page, context, api }) => {
     api.nere = true;
     await context.setOffline(true);
     await page.locator('#btn-add').click();
@@ -44,7 +44,7 @@ test.describe('Utan täckning', () => {
     await expect(page.locator('.fynd-pin.pending')).toHaveCount(1);
   });
 
-  test('visar senast hämtade fynd när servern inte nås', async ({ kartan: page, api }) => {
+  test('visar senast hämtade fynd när servern inte nås', { annotation: { type: 'testfall', description: 'TC-OFF-03' } }, async ({ kartan: page, api }) => {
     api.nere = true;
     await page.reload();
     await expect(page.locator('#toast')).toContainText('Ingen täckning');

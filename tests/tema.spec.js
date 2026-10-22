@@ -1,7 +1,7 @@
 const { test, expect, bild } = require('./hjalp');
 
 test.describe('Tema', () => {
-  test('temaknappen växlar Auto → Ljust → Mörkt och sparar valet', async ({ kartan: page }) => {
+  test('temaknappen växlar Auto → Ljust → Mörkt och sparar valet', { annotation: { type: 'testfall', description: 'TC-TEM-01' } }, async ({ kartan: page }) => {
     const knapp = page.locator('#btn-theme');
     await expect(page.locator('#theme-label')).toHaveText('Auto');
     await knapp.click();
@@ -14,7 +14,7 @@ test.describe('Tema', () => {
     await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
   });
 
-  test('mörkt läge följer telefonens inställning', async ({ page, api }) => {
+  test('mörkt läge följer telefonens inställning', { annotation: { type: 'testfall', description: 'TC-TEM-02' } }, async ({ page, api }) => {
     await page.emulateMedia({ colorScheme: 'dark' });
     await require('./mock').inloggad(page);
     await page.goto('./');
@@ -24,7 +24,7 @@ test.describe('Tema', () => {
     await bild(page, 'Kartan i mörkt läge');
   });
 
-  test('ljust läge har Kantarell-färgerna', async ({ page, api }) => {
+  test('ljust läge har Kantarell-färgerna', { annotation: { type: 'testfall', description: 'TC-TEM-03' } }, async ({ page, api }) => {
     await page.emulateMedia({ colorScheme: 'light' });
     await page.goto('./');
     const bg = await page.evaluate(() => getComputedStyle(document.body).backgroundColor);

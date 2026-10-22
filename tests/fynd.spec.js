@@ -4,7 +4,7 @@ const { test, expect, bild } = require('./hjalp');
 const FOTO = path.join(__dirname, 'data', 'kantarell.jpg');
 
 test.describe('Nytt fynd', () => {
-  test('sparar ett fynd med art, mängd, anteckning och foto', async ({ kartan: page, api }) => {
+  test('sparar ett fynd med art, mängd, anteckning och foto', { annotation: { type: 'testfall', description: 'TC-FYN-01' } }, async ({ kartan: page, api }) => {
     await page.locator('#btn-add').click();
     await expect(page.locator('#sheet')).toBeVisible();
 
@@ -32,7 +32,7 @@ test.describe('Nytt fynd', () => {
     expect(api.uppladdade).toContain(nytt.foto_path);
   });
 
-  test('fotot krymps innan uppladdning', async ({ kartan: page }) => {
+  test('fotot krymps innan uppladdning', { annotation: { type: 'testfall', description: 'TC-FYN-02' } }, async ({ kartan: page }) => {
     await page.locator('#btn-add').click();
     await page.locator('#fynd-foto').setInputFiles(FOTO);
     await expect(page.locator('#foto-text')).toContainText('kB');
@@ -41,7 +41,7 @@ test.describe('Nytt fynd', () => {
     expect(kb).toBeLessThanOrEqual(250);
   });
 
-  test('senast valda art är förvald nästa gång', async ({ kartan: page }) => {
+  test('senast valda art är förvald nästa gång', { annotation: { type: 'testfall', description: 'TC-FYN-03' } }, async ({ kartan: page }) => {
     await page.locator('#btn-add').click();
     await page.locator('#art-grid [data-art="karljohan"]').click();
     await page.locator('#btn-save').click();
@@ -50,7 +50,7 @@ test.describe('Nytt fynd', () => {
     await expect(page.locator('#art-grid [data-art="karljohan"]')).toHaveClass(/on/);
   });
 
-  test('fynd kan placeras för hand på kartan', async ({ kartan: page, api }) => {
+  test('fynd kan placeras för hand på kartan', { annotation: { type: 'testfall', description: 'TC-FYN-04' } }, async ({ kartan: page, api }) => {
     await page.locator('#btn-add').click();
     await page.locator('#btn-place').click();
     await expect(page.locator('#place-ui')).toBeVisible();
@@ -62,7 +62,7 @@ test.describe('Nytt fynd', () => {
     expect(api.fynd.at(-1).placerad).toBe(true);
   });
 
-  test('ta bort fynd raderar både fynd och foto', async ({ kartan: page, api }) => {
+  test('ta bort fynd raderar både fynd och foto', { annotation: { type: 'testfall', description: 'TC-FYN-05' } }, async ({ kartan: page, api }) => {
     page.on('dialog', (d) => d.accept());
     await page.locator('#toast').waitFor({ state: 'hidden' });
     await page.locator('.fynd-pin').nth(2).click(); // f1 har foto
@@ -73,7 +73,7 @@ test.describe('Nytt fynd', () => {
     expect(api.borttagnaFoton.some((p) => p.endsWith('/f1.jpg'))).toBe(true);
   });
 
-  test('avbryta borttagning behåller fyndet', async ({ kartan: page, api }) => {
+  test('avbryta borttagning behåller fyndet', { annotation: { type: 'testfall', description: 'TC-FYN-06' } }, async ({ kartan: page, api }) => {
     page.on('dialog', (d) => d.dismiss());
     await page.locator('#toast').waitFor({ state: 'hidden' });
     await page.locator('.fynd-pin').first().click();

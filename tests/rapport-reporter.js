@@ -28,7 +28,8 @@ class RapportReporter {
     const nyckel = grupp + '›' + namn;
 
     if (!this.tester.has(nyckel)) {
-      this.tester.set(nyckel, { grupp, namn, fil: path.relative(process.cwd(), test.location.file) + ':' + test.location.line, perProjekt: {} });
+      const tc = (test.annotations.find((a) => a.type === 'testfall') || {}).description || '';
+      this.tester.set(nyckel, { grupp, namn, tc, fil: path.relative(process.cwd(), test.location.file) + ':' + test.location.line, perProjekt: {} });
     }
     const bilder = [];
     for (const a of result.attachments) {
@@ -130,6 +131,7 @@ function datum(iso) {
   return new Date(iso).toLocaleString('sv-SE', { timeZone: 'Europe/Stockholm', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 }
 
+const TESTPLAN = 'https://github.com/DennisHoglund/svampkartan/blob/main/testplan/testfall/';
 const KORT = { 'iPhone (WebKit)': 'iPhone', 'Android (Chromium)': 'Android' };
 const IKON = { ok: '✓', fel: '✕', flaky: '!', hoppad: '–', expected: '✓', unexpected: '✕', skipped: '–' };
 
@@ -176,7 +178,8 @@ function html({ meta, summa, tester, hist, projekt }) {
     const fel = projekt.flatMap((p) => (t.perProjekt[p] ? t.perProjekt[p].fel.map((f) => ({ p, f })) : []));
     const bilder = projekt.flatMap((p) => (t.perProjekt[p] ? t.perProjekt[p].bilder.map((b) => ({ ...b, p })) : []));
     const harDetaljer = fel.length || bilder.length;
-    const inre = '<div class="rad-topp"><span class="ikon ikon-' + t.status + '">' + IKON[t.status] + '</span><span class="namn">' + esc(t.namn) + '</span></div><div class="chips">' + chips + '</div>';
+    const tcLank = t.tc ? '<a class="tc" href="' + TESTPLAN + esc(t.tc) + '.md" onclick="event.stopPropagation()">' + esc(t.tc) + '</a>' : '';
+    const inre = '<div class="rad-topp"><span class="ikon ikon-' + t.status + '">' + IKON[t.status] + '</span><span class="namn">' + tcLank + esc(t.namn) + '</span></div><div class="chips">' + chips + '</div>';
     if (!harDetaljer) return '<div class="rad">' + inre + '</div>';
     return '<details class="rad"' + (t.status === 'fel' ? ' open' : '') + '><summary>' + inre + '</summary><div class="detaljer">' +
       fel.map(({ p, f }) => '<p class="fel-rubrik">' + esc(KORT[p] || p) + '</p><pre>' + esc(f) + '</pre>').join('') +
@@ -241,6 +244,8 @@ details[open]>summary .namn::after{transform:rotate(90deg)}
 .ikon{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:.75rem;font-weight:800;margin-top:1px}
 .ikon-ok{background:var(--ok-bg);color:var(--ok)}.ikon-fel{background:var(--fel);color:#fff}.ikon-flaky{background:var(--flaky-bg);color:var(--flaky)}.ikon-hoppad{background:var(--yta2);color:var(--text2)}
 .namn{font-weight:500}
+.tc{display:inline-block;font:700 .72rem ui-monospace,Menlo,monospace;padding:1px 7px;margin-right:8px;border-radius:6px;background:var(--yta2);color:var(--text2);text-decoration:none;vertical-align:1px}
+.tc:hover{color:var(--text)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 0 32px}
 .chip{font-size:.78rem;padding:2px 9px;border-radius:999px;background:var(--yta2);color:var(--text2);white-space:nowrap}
 .chip small{opacity:.8}
@@ -292,6 +297,7 @@ footer{text-align:center;color:var(--text2);font-size:.85rem;margin-top:24px}
   }).join('')}
 
   <p style="text-align:center;margin-top:24px"><a class="knapp" href="playwright/index.html">Detaljerad rapport med spårning →</a></p>
+  <p style="text-align:center"><a href="https://github.com/DennisHoglund/svampkartan/blob/main/testplan/index.md">Testplan med alla testfall</a></p>
   <footer>Genererad av Playwright ${esc(require('@playwright/test/package.json').version)} · <a href="../">Öppna Svampkartan</a></footer>
 </div>
 </body>
@@ -299,11 +305,11 @@ footer{text-align:center;color:var(--text2);font-size:.85rem;margin-top:24px}
 }
 
 function markdown({ meta, summa, tester }) {
-  const rad = tester.map((t) => '| ' + IKON[t.status] + ' | ' + t.grupp + ' | ' + t.namn + ' |').join('\n');
+  const rad = tester.map((t) => '| ' + IKON[t.status] + ' | ' + (t.tc ? '[' + t.tc + '](' + TESTPLAN + t.tc + '.md)' : '') + ' | ' + t.grupp + ' | ' + t.namn + ' |').join('\n');
   return '## ' + (summa.fel ? '❌ ' + summa.fel + ' tester misslyckades' : '✅ Alla ' + summa.totalt + ' tester gröna') + '\n\n' +
     '**' + summa.ok + '** godkända · **' + summa.fel + '** misslyckade · **' + summa.flaky + '** ostadiga · ' + sek(summa.tid) + '\n\n' +
     '📊 [Öppna testrapporten](https://dennishoglund.github.io/svampkartan/rapport/)\n\n' +
-    '| | Grupp | Test |\n|---|---|---|\n' + rad + '\n';
+    '| | Testfall | Grupp | Test |\n|---|---|---|---|\n' + rad + '\n';
 }
 
 module.exports = RapportReporter;

@@ -57,6 +57,7 @@ Playwright-tester körs automatiskt vid varje push till `main` i GitHub Actions,
 All extern trafik mockas (Supabase, kartrutor, Open-Meteo), så testerna rör aldrig riktig data.
 
 - **Testrapport:** https://dennishoglund.github.io/svampkartan/rapport/
+- **Testplan:** [`testplan/index.md`](testplan/index.md) – alla testfall med steg för steg
 - **Detaljerad rapport med spårning:** https://dennishoglund.github.io/svampkartan/rapport/playwright/
 
 Köra lokalt:

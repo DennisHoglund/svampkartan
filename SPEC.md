@@ -45,6 +45,7 @@
 | `manifest.webmanifest`, `icons/` | PWA-inställningar och ikoner |
 | `supabase/schema.sql` | Tabell, bucket och behörighetsregler |
 | `tests/`, `playwright.config.js` | Testsvit och egen rapport |
+| `testplan/` | Testfall som docs-as-code |
 | `.github/workflows/tester.yml` | CI: test och publicering |
 
 ---
@@ -245,7 +246,16 @@ All åtkomst till `localStorage` är inlindad i try/catch.
 
 Totalt blir det 23 tester × 2 enheter = 46 körningar.
 
-### 7.2 Testrapport
+### 7.2 Testplan (docs-as-code)
+
+- `testplan/index.md` ger en översikt över alla testfall per område med prioritet och typ (🤖 automatiserad / 🖐️ manuell).
+- `testplan/testfall/TC-<OMRÅDE>-<NR>.md` innehåller ett testfall per fil: område, prioritet, länk till krav i SPEC, förutsättningar, steg med förväntat resultat, länk till Playwright-testet och en resultatruta för manuell körning.
+- Områden: INL (inloggning), KAR (karta), FYN (nytt fynd och foton), VAD (väder), OFF (offline), TEM (tema), PWA (installation och uppdatering).
+- Automatiserade tester kopplas till sitt testfall med `{ annotation: { type: 'testfall', description: 'TC-…' } }`. Testrapporten visar ID:t med länk till testfallet.
+- `tests/kontrollera-testplan.js` körs i CI före testerna och fäller bygget om ett ID saknar fil, om ett automatiserat testfall saknar test eller om ett testfall saknas i översikten.
+- Manuella testfall täcker det som kräver riktig iPhone: installation, Face ID, kamera och HEIC, GPS i skogen, riktig offline, riktigt väder och automatisk uppdatering.
+
+### 7.3 Testrapport
 
 En egen reporter (`tests/rapport-reporter.js`) skapar `rapport/index.html` i Kantarell-stil. Den innehåller:
 - Status med procentring, commit-meddelande, SHA, gren och länk till körningen.
@@ -258,10 +268,10 @@ En egen reporter (`tests/rapport-reporter.js`) skapar `rapport/index.html` i Kan
 
 Rapporten finns på https://dennishoglund.github.io/svampkartan/rapport/
 
-### 7.3 CI/CD (`.github/workflows/tester.yml`)
+### 7.4 CI/CD (`.github/workflows/tester.yml`)
 
 - Körs vid **varje push till `main`** och manuellt (`workflow_dispatch`).
-- Stegen är: `npm ci` → installera WebKit och Chromium → hämta historik → kör tester (`continue-on-error`) → bygg `_site` (app + rapport, utan tester och node_modules) → spara rapporten som artefakt i 14 dagar → publicera på GitHub Pages → markera commiten som röd om något test föll.
+- Stegen är: `npm ci` → installera WebKit och Chromium → kontrollera testplanen → hämta historik → kör tester (`continue-on-error`) → bygg `_site` (app + rapport, utan tester och node_modules) → spara rapporten som artefakt i 14 dagar → publicera på GitHub Pages → markera commiten som röd om något test föll.
 - I CI används 1 omförsök och 2 workers.
 - **GitHub Pages:** Source är satt till **GitHub Actions**.
 - Appen publiceras även om testerna faller. En möjlig ändring är att bara publicera när alla tester är gröna.
