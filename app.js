@@ -153,8 +153,22 @@
     if (!error) window.SvampFynd.backfill(server);
     if (!quiet) {
       if (offline) window.SvampMap.toast('Ingen täckning – visar sparade fynd', 'ok', 3000);
-      else if (!error) window.SvampMap.toast(list.length ? list.length + ' fynd på kartan' : 'Databasen är klar · inga fynd än', 'ok', 2500);
+      else if (!error) {
+        const mb = await fotoMb();
+        const lagring = mb != null ? ' · foton ' + mb.toFixed(1).replace('.', ',') + ' MB av 1 024' : '';
+        window.SvampMap.toast(list.length ? list.length + ' fynd på kartan' + lagring : 'Databasen är klar · inga fynd än', 'ok', 3000);
+      }
     }
+  }
+
+  // Summerar storleken på dina foton i bucketen
+  async function fotoMb() {
+    if (!currentUserId) return null;
+    try {
+      const { data, error } = await sb.storage.from('svamp-foton').list(currentUserId, { limit: 1000 });
+      if (error || !data) return null;
+      return data.reduce((sum, f) => sum + ((f.metadata && f.metadata.size) || 0), 0) / (1024 * 1024);
+    } catch (e) { return null; }
   }
 
   function updateBadge(n) {

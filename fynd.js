@@ -5,7 +5,8 @@ window.SvampFynd = (function () {
   const $ = (id) => document.getElementById(id);
   const LAST_ART_KEY = 'svamp-last-art';
   const BUCKET = 'svamp-foton';
-  const MAX_SIDE = 1600;
+  const MAX_SIDE = 1280;      // längsta sida i pixlar
+  const MAL_KB = 250;         // sikta på max ca 250 kB per foto
   const MANGD = [
     { v: 1, t: 'Enstaka' }, { v: 2, t: 'Lite' }, { v: 3, t: 'Lagom' },
     { v: 4, t: 'Mycket' }, { v: 5, t: 'Massor' }
@@ -139,26 +140,56 @@ window.SvampFynd = (function () {
       if (img.src) URL.revokeObjectURL(img.src);
       img.src = URL.createObjectURL(state.blob);
       img.hidden = false;
-      $('foto-text').textContent = 'Byt foto';
+      $('foto-text').textContent = 'Byt foto (' + Math.round(state.blob.size / 1024) + ' kB)';
     } catch (err) {
-      // Reserv: ladda upp originalet om nedskalningen inte fungerar i webbläsaren
-      state.blob = file;
-      $('foto-text').textContent = 'Foto valt (' + Math.round(file.size / 1024) + ' kB)';
+      // Ladda aldrig upp originalet (flera MB) – be om ett annat foto i stället
+      state.blob = null;
+      $('fynd-foto').value = '';
+      $('foto-preview').hidden = true;
+      $('foto-text').textContent = 'Kunde inte läsa fotot – prova ett annat';
     }
   }
 
-  // Skala ner till max 1600 px och spara som JPEG (ca 200–400 kB)
-  async function shrink(file) {
-    const bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }).catch(() => createImageBitmap(file));
-    const scale = Math.min(1, MAX_SIDE / Math.max(bmp.width, bmp.height));
-    const w = Math.round(bmp.width * scale);
-    const h = Math.round(bmp.height * scale);
+  // Avkoda bilden. createImageBitmap först, annars <img> (klarar HEIC i Safari).
+  async function decode(file) {
+    try {
+      return await createImageBitmap(file, { imageOrientation: 'from-image' });
+    } catch (e) {
+      const url = URL.createObjectURL(file);
+      try {
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = url;
+        await img.decode();
+        return img;
+      } finally {
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      }
+    }
+  }
+
+  function toJpeg(src, side, quality) {
+    const sw = src.naturalWidth || src.width;
+    const sh = src.naturalHeight || src.height;
+    const scale = Math.min(1, side / Math.max(sw, sh));
     const canvas = document.createElement('canvas');
-    canvas.width = w;
-    canvas.height = h;
-    canvas.getContext('2d').drawImage(bmp, 0, 0, w, h);
-    if (bmp.close) bmp.close();
-    return new Promise((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('toBlob'))), 'image/jpeg', 0.8));
+    canvas.width = Math.round(sw * scale);
+    canvas.height = Math.round(sh * scale);
+    canvas.getContext('2d').drawImage(src, 0, 0, canvas.width, canvas.height);
+    return new Promise((res, rej) => canvas.toBlob((b) => (b ? res(b) : rej(new Error('toBlob'))), 'image/jpeg', quality));
+  }
+
+  // Skala ner till max 1280 px JPEG, och mer vid behov tills fotot är under ca 250 kB
+  async function shrink(file) {
+    const src = await decode(file);
+    const steg = [[MAX_SIDE, 0.72], [MAX_SIDE, 0.6], [1024, 0.6], [900, 0.55]];
+    let blob = null;
+    for (const [side, q] of steg) {
+      blob = await toJpeg(src, side, q);
+      if (blob.size <= MAL_KB * 1024) break;
+    }
+    if (src.close) src.close();
+    return blob;
   }
 
   // ---------- Spara ----------

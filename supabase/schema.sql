@@ -51,8 +51,9 @@ grant select, insert, update, delete on public.svamp_fynd to service_role;
 
 -- ---------------------------------------------------------------------------
 -- Foton: privat bucket. Varje foto läggs under <user_id>/<fynd-id>.jpg
+-- Appen krymper foton till ca 150–250 kB, så 1 GB räcker till flera tusen.
 insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values ('svamp-foton', 'svamp-foton', false, 5242880,
+values ('svamp-foton', 'svamp-foton', false, 1048576,  -- max 1 MB per foto
         array['image/jpeg', 'image/png', 'image/webp', 'image/heic'])
 on conflict (id) do update
   set public = excluded.public,
