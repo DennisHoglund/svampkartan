@@ -145,7 +145,7 @@
 
     const ko = currentUserId ? await window.SvampKo.forUser(currentUserId).catch(() => []) : [];
     const koIds = new Set(ko.map((i) => i.id));
-    const pending = ko.map((i) => Object.assign({}, i.row, { _pending: true, _harFoto: !!i.blob }));
+    const pending = ko.map((i) => Object.assign({}, i.row, { _pending: true, _harFoto: window.SvampKo.harFoto(i) }));
     const list = pending.concat((server || []).filter((f) => !koIds.has(f.id)));
 
     window.SvampMap.showFynd(list);

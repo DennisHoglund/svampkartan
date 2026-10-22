@@ -8,6 +8,8 @@ test.describe('Utan täckning', () => {
     await page.locator('#btn-add').click();
     await page.locator('#art-grid [data-art="kantarell"]').click();
     await page.locator('#fynd-not').fill('Offlinefynd');
+    await page.locator('#fynd-foto').setInputFiles(require('path').join(__dirname, 'data', 'kantarell.jpg'));
+    await expect(page.locator('#foto-text')).toContainText('kB');
     await page.locator('#btn-save').click();
 
     await expect(page.locator('#toast')).toContainText('sparad i telefonen');
@@ -25,6 +27,7 @@ test.describe('Utan täckning', () => {
     const uppladdat = api.fynd.find((f) => f.anteckning === 'Offlinefynd');
     expect(uppladdat).toBeTruthy();
     expect(uppladdat.vader).toBeTruthy();
+    expect(api.uppladdade).toContain(uppladdat.foto_path);
   });
 
   test('köade fynd finns kvar efter omstart av appen', async ({ kartan: page, context, api }) => {

@@ -33,7 +33,23 @@ window.SvampKo = (function () {
     });
   }
 
-  const put = (item) => tx('readwrite', (s) => s.put(item)).then(changed);
+  // Foton sparas som ArrayBuffer, inte Blob: Safari i privat läge (och WebKit i tester)
+  // kan inte lagra Blob i IndexedDB, men ArrayBuffer fungerar överallt.
+  async function put(item) {
+    const rad = Object.assign({}, item);
+    if (rad.blob) {
+      rad.data = await rad.blob.arrayBuffer();
+      delete rad.blob;
+    }
+    await tx('readwrite', (s) => s.put(rad));
+    changed();
+  }
+
+  function fotoBlob(item) {
+    if (item.blob) return item.blob;
+    if (item.data) return new Blob([item.data], { type: item.typ || 'image/jpeg' });
+    return null;
+  }
   const del = (id) => tx('readwrite', (s) => s.delete(id)).then(changed);
   const all = () => tx('readonly', (s) => s.getAll()).then((r) => r || []);
 
@@ -61,8 +77,9 @@ window.SvampKo = (function () {
           if (!navigator.onLine) break;
           const row = Object.assign({}, item.row);
 
-          if (item.blob && item.fotoPath) {
-            const up = await sb.storage.from(BUCKET).upload(item.fotoPath, item.blob, { contentType: item.typ || 'image/jpeg', upsert: true });
+          const blob = fotoBlob(item);
+          if (blob && item.fotoPath) {
+            const up = await sb.storage.from(BUCKET).upload(item.fotoPath, blob, { contentType: item.typ || 'image/jpeg', upsert: true });
             if (up.error) throw up.error;
             row.foto_path = item.fotoPath;
           }
@@ -87,5 +104,5 @@ window.SvampKo = (function () {
     return syncing;
   }
 
-  return { put, del, all, forUser, sync, onChange, isNetworkError };
+  return { put, del, all, forUser, sync, onChange, isNetworkError, harFoto: (i) => !!(i.blob || i.data) };
 })();
