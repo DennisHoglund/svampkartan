@@ -1,5 +1,5 @@
 // Höj versionen vid varje deploy så att telefonen hämtar nya filer.
-const CACHE = 'svampkartan-v12';
+const CACHE = 'svampkartan-v13';
 
 const SHELL = [
   './',
@@ -76,6 +76,9 @@ self.addEventListener('fetch', (event) => {
 
   // Allt annat externt (Supabase m.m.) går direkt till nätet
   if (url.origin !== self.location.origin) return;
+
+  // Testrapporten under /rapport/ ska aldrig cachas eller blandas ihop med appen
+  if (url.pathname.includes('/rapport/')) return;
 
   // Sidladdning: nätet först, annars cachad sida (offline)
   if (req.mode === 'navigate') {

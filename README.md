@@ -50,3 +50,31 @@ Safari → Dela → **Lägg till på hemskärmen**.
 
 ## Nästa steg
 7. Filter och säsongsvy
+
+## Tester
+
+Playwright-tester körs automatiskt vid varje push till `main` i GitHub Actions, på iPhone (WebKit) och Android (Chromium).
+All extern trafik mockas (Supabase, kartrutor, Open-Meteo), så testerna rör aldrig riktig data.
+
+- **Testrapport:** https://dennishoglund.github.io/svampkartan/rapport/
+- **Detaljerad rapport med spårning:** https://dennishoglund.github.io/svampkartan/rapport/playwright/
+
+Köra lokalt:
+
+```bash
+npm ci
+npx playwright install webkit chromium
+npm test            # alla tester
+npm run test:ui     # Playwrights UI-läge
+npm run rapport     # öppna rapporten
+```
+
+| Fil | Innehåll |
+|---|---|
+| `tests/mock.js` | Mockad Supabase, CDN, kartrutor och väder |
+| `tests/hjalp.js` | Fixturer (`api`, `kartan`) och `bild()` för skärmdumpar |
+| `tests/*.spec.js` | Inloggning, karta, nytt fynd, offline, tema |
+| `tests/rapport-reporter.js` | Egen rapport i Kantarell-stil med trend och skärmdumpar |
+| `.github/workflows/tester.yml` | Testar och publicerar app + rapport till GitHub Pages |
+
+**GitHub Pages källa:** Settings → Pages → Source: **GitHub Actions**.

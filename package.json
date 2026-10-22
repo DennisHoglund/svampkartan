@@ -1,0 +1,16 @@
+{
+  "name": "svampkartan",
+  "private": true,
+  "description": "Svampkartan – PWA för svampställen",
+  "scripts": {
+    "test": "playwright test",
+    "test:ui": "playwright test --ui",
+    "rapport": "npx http-server rapport -p 9324 -o"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@supabase/supabase-js": "2.75.0",
+    "http-server": "^14.1.1",
+    "leaflet": "1.9.4"
+  }
+}
