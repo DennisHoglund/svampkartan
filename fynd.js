@@ -73,7 +73,8 @@ window.SvampFynd = (function () {
       art: store.get(LAST_ART_KEY) || 'kantarell',
       mangd: 3,
       point,
-      blob: null
+      blob: null,
+      data: null
     };
     selectArt(state.art);
     selectMangd(state.mangd);
@@ -136,6 +137,8 @@ window.SvampFynd = (function () {
     $('foto-text').textContent = 'Förbereder foto…';
     try {
       state.blob = await shrink(file);
+      // Läs bytesen direkt så att Spara aldrig behöver läsa Blob:en igen (sparas som ArrayBuffer)
+      state.data = await state.blob.arrayBuffer();
       const img = $('foto-preview');
       if (img.src) URL.revokeObjectURL(img.src);
       img.src = URL.createObjectURL(state.blob);
@@ -144,6 +147,7 @@ window.SvampFynd = (function () {
     } catch (err) {
       // Ladda aldrig upp originalet (flera MB) – be om ett annat foto i stället
       state.blob = null;
+      state.data = null;
       $('fynd-foto').value = '';
       $('foto-preview').hidden = true;
       $('foto-text').textContent = 'Kunde inte läsa fotot – prova ett annat';
@@ -228,7 +232,7 @@ window.SvampFynd = (function () {
       }
 
       // 1. Spara alltid i telefonen först – då försvinner inget även utan täckning
-      await window.SvampKo.put({ id: row.id, userId, row, blob: state.blob, typ, fotoPath, created: Date.now() });
+      await window.SvampKo.put({ id: row.id, userId, row, blob: state.data ? null : state.blob, data: state.data || undefined, typ, fotoPath, created: Date.now() });
 
       store.set(LAST_ART_KEY, state.art);
       const namn = window.svampArt(state.art).namn;

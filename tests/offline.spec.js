@@ -9,9 +9,9 @@ test.describe('Utan täckning', () => {
     await expect(page.locator('#foto-text')).toContainText('kB');
 
     // Täckningen försvinner innan fyndet sparas. Fotot väljs före avbrottet eftersom
-    // Playwrights WebKit inte kan läsa valda filer alls i offline-läge (NotReadableError
-    // även för file.arrayBuffer och FileReader). På en riktig iPhone är det ingen nätverkstrafik
-    // att läsa ett foto – det täcks av det manuella testfallet TC-OFF-04.
+    // Playwrights WebKit inte kan läsa filer eller Blob:ar alls i offline-läge
+    // (NotReadableError även för arrayBuffer och FileReader). På en riktig iPhone är det
+    // ingen nätverkstrafik att läsa ett foto – det täcks av det manuella testfallet TC-OFF-04.
     await context.setOffline(true);
     api.nere = true;
     await page.locator('#btn-save').click();

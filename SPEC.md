@@ -122,6 +122,7 @@ Knappen **Nytt fynd** öppnar ett bottenblad med följande fält:
 
 - Bilden avkodas med `createImageBitmap`. Som reserv används ett `<img>`-element, som klarar HEIC i Safari.
 - Bilden krymps stegvis till JPEG tills den är **≤ 250 kB**: 1280 px/0,72 → 1280/0,60 → 1024/0,60 → 900/0,55.
+- Den krympta bildens bytes läses in som `ArrayBuffer` direkt när fotot förbereds, så att Spara aldrig behöver läsa Blob:en (sparas som ArrayBuffer i kön).
 - Originalbilden laddas **aldrig** upp. Kan bilden inte läsas ombeds användaren välja ett annat foto.
 - Fotot sparas i den privata bucketen `svamp-foton` som `<user_id>/<fynd-id>.jpg`.
 - I popupen visas fotot via en signerad URL som gäller i 1 timme och cachas i 50 minuter. Ett tryck på bilden öppnar den i full storlek.

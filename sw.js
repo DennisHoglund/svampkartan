@@ -1,5 +1,5 @@
 // Höj versionen vid varje deploy så att telefonen hämtar nya filer.
-const CACHE = 'svampkartan-v16';
+const CACHE = 'svampkartan-v17';
 
 const SHELL = [
   './',

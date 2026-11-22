@@ -37,10 +37,9 @@ window.SvampKo = (function () {
   // kan inte lagra Blob i IndexedDB, men ArrayBuffer fungerar överallt.
   async function put(item) {
     const rad = Object.assign({}, item);
-    if (rad.blob) {
-      rad.data = await rad.blob.arrayBuffer();
-      delete rad.blob;
-    }
+    if (rad.blob && !rad.data) rad.data = await rad.blob.arrayBuffer();
+    delete rad.blob;
+    if (!rad.data) delete rad.data;
     await tx('readwrite', (s) => s.put(rad));
     changed();
   }
