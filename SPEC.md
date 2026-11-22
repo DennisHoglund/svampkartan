@@ -120,7 +120,7 @@ Knappen **Nytt fynd** öppnar ett bottenblad med följande fält:
 
 ### 4.4 Foton
 
-- Bilden avkodas med `createImageBitmap`. Som reserv används ett `<img>`-element, som klarar HEIC i Safari.
+- Bilden avkodas med `createImageBitmap` (först med EXIF-rotation, sedan utan inställningar). Som reserv används ett `<img>`-element från blob-URL, som klarar HEIC i Safari, och sist ett `<img>` från data-URL via `FileReader` för när blob-URL:er inte laddas utan nät (WebKit).
 - Bilden krymps stegvis till JPEG tills den är **≤ 250 kB**: 1280 px/0,72 → 1280/0,60 → 1024/0,60 → 900/0,55.
 - Originalbilden laddas **aldrig** upp. Kan bilden inte läsas ombeds användaren välja ett annat foto.
 - Fotot sparas i den privata bucketen `svamp-foton` som `<user_id>/<fynd-id>.jpg`.

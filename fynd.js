@@ -150,22 +150,38 @@ window.SvampFynd = (function () {
     }
   }
 
-  // Avkoda bilden. createImageBitmap först, annars <img> (klarar HEIC i Safari).
+  // Avkoda bilden. Försöker i tur och ordning:
+  // 1. createImageBitmap med EXIF-rotation, 2. createImageBitmap utan inställningar,
+  // 3. <img> från blob-URL (klarar HEIC i Safari), 4. <img> från data-URL via FileReader.
+  // Steg 4 behövs när blob-URL:er inte går att ladda, t.ex. i WebKit utan nät.
   async function decode(file) {
+    try { return await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) {}
+    try { return await createImageBitmap(file); } catch (e) {}
+    const url = URL.createObjectURL(file);
     try {
-      return await createImageBitmap(file, { imageOrientation: 'from-image' });
+      return await imgFran(url);
     } catch (e) {
-      const url = URL.createObjectURL(file);
-      try {
-        const img = new Image();
-        img.decoding = 'async';
-        img.src = url;
-        await img.decode();
-        return img;
-      } finally {
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
+      return await imgFran(await dataUrl(file));
+    } finally {
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     }
+  }
+
+  async function imgFran(src) {
+    const img = new Image();
+    img.decoding = 'async';
+    img.src = src;
+    await img.decode();
+    return img;
+  }
+
+  function dataUrl(file) {
+    return new Promise((res, rej) => {
+      const r = new FileReader();
+      r.onload = () => res(r.result);
+      r.onerror = () => rej(r.error || new Error('FileReader'));
+      r.readAsDataURL(file);
+    });
   }
 
   function toJpeg(src, side, quality) {

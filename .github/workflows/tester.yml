@@ -19,7 +19,7 @@ concurrency:
 jobs:
   test-och-publicera:
     name: Testa och publicera
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04  # låst: Playwright 1.56 stöder inte WebKit på ubuntu-latest (26.04)
     timeout-minutes: 20
     environment:
       name: github-pages
