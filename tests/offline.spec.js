@@ -2,14 +2,18 @@ const { test, expect, bild } = require('./hjalp');
 
 test.describe('Utan täckning', () => {
   test('fynd sparas i telefonen och laddas upp när täckningen kommer tillbaka', { annotation: { type: 'testfall', description: 'TC-OFF-01' } }, async ({ kartan: page, context, api }) => {
-    await context.setOffline(true);
-    api.nere = true;
-
     await page.locator('#btn-add').click();
     await page.locator('#art-grid [data-art="kantarell"]').click();
     await page.locator('#fynd-not').fill('Offlinefynd');
     await page.locator('#fynd-foto').setInputFiles(require('path').join(__dirname, 'data', 'kantarell.jpg'));
     await expect(page.locator('#foto-text')).toContainText('kB');
+
+    // Täckningen försvinner innan fyndet sparas. Fotot väljs före avbrottet eftersom
+    // Playwrights WebKit inte kan läsa valda filer alls i offline-läge (NotReadableError
+    // även för file.arrayBuffer och FileReader). På en riktig iPhone är det ingen nätverkstrafik
+    // att läsa ett foto – det täcks av det manuella testfallet TC-OFF-04.
+    await context.setOffline(true);
+    api.nere = true;
     await page.locator('#btn-save').click();
 
     await expect(page.locator('#toast')).toContainText('sparad i telefonen');
